@@ -30,12 +30,17 @@ import (
 	"github.com/spf13/viper"
 )
 
+var (
+	version string
+)
+
 var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "orbit",
-	Short: "An open-source real-time monitoring system.",
+	Use:     "orbit",
+	Short:   "An open-source real-time monitoring system.",
+	Version: version,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -57,7 +62,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.telescope.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is .orbit.yaml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -71,13 +76,13 @@ func initConfig() {
 		viper.SetConfigFile(cfgFile)
 	} else {
 		// Find home directory.
-		home, err := os.UserHomeDir()
+		current, err := os.Getwd()
 		cobra.CheckErr(err)
 
-		// Search config in home directory with name ".telescope" (without extension).
-		viper.AddConfigPath(home)
+		// Search config in home directory with name ".orbit" (without extension).
+		viper.AddConfigPath(current)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".telescope")
+		viper.SetConfigName(".orbit")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
