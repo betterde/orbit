@@ -1,0 +1,23 @@
+services:
+  ferretdb:
+    image: ghcr.io/ferretdb/ferretdb:latest
+    ports:
+      - 0.0.0.0:27017:27017/tcp
+    restart: always
+    volumes:
+      - ferretdb-data:/state
+    hostname: ferretdb
+    networks:
+      - orbit
+    environment:
+      - FERRETDB_HANDLER=sqlite
+    container_name: ferretdb
+
+volumes:
+  ferretdb-data:
+    name: ferretdb-data
+    driver: local
+
+networks:
+  orbit:
+    name: orbit
