@@ -1,0 +1,12 @@
+env: production
+listen: 127.0.0.1:8080
+logging:
+  level: INFO
+
+database:
+  mongodb:
+    db: orbit
+    uri: mongodb://127.0.0.1:27017/
+
+paginator:
+  limit: 10
