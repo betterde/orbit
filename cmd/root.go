@@ -23,32 +23,68 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"github.com/betterde/orbit/internal/journal"
+	"github.com/betterde/orbit/internal/response"
+	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var (
-	version string
+	app     *fiber.App
+	name    = "Orbit"
+	build   = time.Now().Format(time.UnixDate)
+	commit  = "none"
+	version = "develop"
+	verbose bool
+	cfgFile string
 )
-
-var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:     "orbit",
 	Short:   "An open-source real-time monitoring system.",
-	Version: version,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Version: fmt.Sprintf("%s; build at: %s; commit hash: %s.", version, build, commit),
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	app = fiber.New(fiber.Config{
+		AppName:       name,
+		ServerHeader:  fmt.Sprintf("%s %s", name, rootCmd.Version),
+		CaseSensitive: true,
+		// Override default error handler
+		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
+			// Status code defaults to 500
+			code := fiber.StatusInternalServerError
+
+			// Retrieve the custom status code if it's a fiber.*Error
+			var e *fiber.Error
+			if errors.As(err, &e) {
+				code = e.Code
+			}
+
+			if err != nil {
+				if code >= fiber.StatusInternalServerError {
+					journal.Logger.Errorw("Analysis server runtime error:", zap.Error(err))
+				}
+
+				// In case the SendFile fails
+				return ctx.Status(code).JSON(response.Send(code, err.Error(), err))
+			}
+
+			return nil
+		},
+	})
+
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
@@ -67,28 +103,44 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose model")
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+	// Initialize the logger using development environment.
+	journal.InitLogger()
+
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
-		current, err := os.Getwd()
-		cobra.CheckErr(err)
-
 		// Search config in home directory with name ".orbit" (without extension).
-		viper.AddConfigPath(current)
-		viper.SetConfigType("yaml")
+		viper.AddConfigPath(".")
 		viper.SetConfigName(".orbit")
+		viper.AddConfigPath("/etc/orbit")
+	}
+
+	// read in environment variables that match
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.SetEnvPrefix("ORBIT")
+
+	// If a config file is found, read it in.
+	if err := viper.ReadInConfig(); err != nil {
+		journal.Logger.Errorf("Failed to read configuration file: %s", err)
+		os.Exit(1)
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
 
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+	err := journal.SetLevel(viper.GetString("logging.level"))
+	if err != nil {
+		journal.Logger.Error("Unable to set logger level", err)
+		os.Exit(1)
+	}
+
+	if verbose {
+		journal.Logger.Infof("Configuration file currently in use: %s", viper.ConfigFileUsed())
 	}
 }
