@@ -42,11 +42,11 @@ func Init(ctx context.Context) {
 
 	logMonitor := event.CommandMonitor{
 		Started: func(ctx context.Context, startedEvent *event.CommandStartedEvent) {
-			journal.Logger.Infof("mongo reqId:%d start on db:%s cmd:%s sql:%+v", startedEvent.RequestID, startedEvent.DatabaseName,
+			journal.Logger.Debugf("mongo reqId:%d start on db:%s cmd:%s sql:%+v", startedEvent.RequestID, startedEvent.DatabaseName,
 				startedEvent.CommandName, startedEvent.Command)
 		},
 		Succeeded: func(ctx context.Context, succeededEvent *event.CommandSucceededEvent) {
-			journal.Logger.Infof("mongo reqId:%d exec cmd:%s success duration %d ms", succeededEvent.RequestID,
+			journal.Logger.Debugf("mongo reqId:%d exec cmd:%s success duration %d ms", succeededEvent.RequestID,
 				succeededEvent.CommandName, succeededEvent.Duration.Milliseconds())
 		},
 		Failed: func(ctx context.Context, failedEvent *event.CommandFailedEvent) {

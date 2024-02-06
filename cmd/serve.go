@@ -52,7 +52,6 @@ var serveCmd = &cobra.Command{
 			app.Use(logger.New())
 		}
 		app.Use(pprof.New())
-		app.Use(logger.New())
 		app.Use(recover.New())
 		app.Use(requestid.New())
 

@@ -104,7 +104,7 @@ func init() {
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose model")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose mode")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -134,13 +134,16 @@ func initConfig() {
 
 	viper.AutomaticEnv() // read in environment variables that match
 
-	err := journal.SetLevel(viper.GetString("logging.level"))
+	level := viper.GetString("logging.level")
+	if verbose {
+		level = "DEBUG"
+	}
+
+	err := journal.SetLevel(level)
 	if err != nil {
 		journal.Logger.Error("Unable to set logger level", err)
 		os.Exit(1)
 	}
 
-	if verbose {
-		journal.Logger.Infof("Configuration file currently in use: %s", viper.ConfigFileUsed())
-	}
+	journal.Logger.Debugf("Configuration file currently in use: %s", viper.ConfigFileUsed())
 }
