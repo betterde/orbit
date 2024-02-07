@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/betterde/orbit/api/handler"
 	"github.com/betterde/orbit/internal/response"
 	"github.com/betterde/orbit/spa"
 	"github.com/gofiber/fiber/v2"
@@ -14,15 +15,14 @@ func RegisterRoutes(app *fiber.App) {
 
 	api := app.Group("/api")
 
-	api.Get("users", func(ctx *fiber.Ctx) error {
-		return ctx.JSON(response.Success("Success", nil, nil))
-	}).Name("Query users list")
+	api.Post("/users", handler.CreateUser).Name("Create user")
+	api.Get("/users", handler.QueryUsers).Name("Query users list")
 
 	// Embed SPA static resource
-	app.All("/*", filesystem.New(filesystem.Config{
+	app.Get("*", filesystem.New(filesystem.Config{
 		Root:               spa.Serve(),
 		Index:              "index.html",
 		NotFoundFile:       "index.html",
 		ContentTypeCharset: "UTF-8",
-	}))
+	})).Name("SPA static resource")
 }
