@@ -25,6 +25,7 @@ package cmd
 import (
 	"context"
 	"github.com/betterde/orbit/api/routes"
+	"github.com/betterde/orbit/global"
 	"github.com/betterde/orbit/internal/database/mongodb"
 	"github.com/betterde/orbit/internal/journal"
 	"github.com/betterde/orbit/internal/pagination"
@@ -57,8 +58,7 @@ var serveCmd = &cobra.Command{
 
 		routes.RegisterRoutes(app)
 
-		ctx, cancel := context.WithCancel(context.Background())
-		mongodb.Init(ctx)
+		mongodb.Init(global.Ctx)
 		mongodb.SetDatabase(viper.GetString("database.mongodb.db"))
 
 		// Set user define pagination limit.
@@ -71,7 +71,7 @@ var serveCmd = &cobra.Command{
 			}
 		}()
 
-		if err := shutdownServer(app, cancel); err != nil {
+		if err := shutdownServer(app, global.CancelFunc); err != nil {
 			journal.Logger.Errorw("Failed to shutdown orbit server:", err)
 		}
 	},

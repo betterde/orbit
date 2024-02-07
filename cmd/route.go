@@ -39,13 +39,13 @@ var routeCmd = &cobra.Command{
 		routes.RegisterRoutes(app)
 
 		routes := app.GetRoutes(true)
-		writer := tabwriter.NewWriter(os.Stdout, 40, 0, 0, '.', tabwriter.TabIndent)
+		writer := tabwriter.NewWriter(os.Stdout, 40, 0, 0, '.', tabwriter.TabIndent|tabwriter.Debug)
 
 		for _, route := range routes {
 			if route.Method == "HEAD" {
 				continue
 			} else if route.Method == "GET" {
-				route.Method = "HEAD/GET"
+				route.Method = "GET|HEAD"
 			}
 
 			if route.Name == "" {
