@@ -1,5 +1,3 @@
-OS ?= darwin
-
 .DEFAULT_GOAL := help
 
 BINARY_NAME ?= orbit
@@ -11,9 +9,7 @@ COMMIT_HASH=`git rev-parse HEAD`
 MODULE=github.com/betterde/orbit
 BUILD_FLAG=-ldflags "-s -w -X '$(MODULE)/cmd.version=$(VERSION)' -X '$(MODULE)/cmd.commit=$(COMMIT_HASH)'"
 
-export GOOS=$(OS)
 export CGO_ENABLED = 0
-export GOARCH = arm64
 
 all: test build
 
