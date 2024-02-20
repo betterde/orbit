@@ -28,19 +28,17 @@ import (
 	"github.com/betterde/orbit/internal/journal"
 	"github.com/betterde/orbit/internal/response"
 	"github.com/gofiber/fiber/v2"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"os"
 	"strings"
-	"time"
-
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var (
 	app     *fiber.App
 	name    = "Orbit"
-	build   = time.Now().Format(time.UnixDate)
+	build   = "current"
 	commit  = "none"
 	version = "develop"
 	verbose bool
@@ -51,7 +49,7 @@ var (
 var rootCmd = &cobra.Command{
 	Use:     "orbit",
 	Short:   "An open-source real-time monitoring system.",
-	Version: fmt.Sprintf("%s; build at: %s; commit hash: %s.", version, build, commit),
+	Version: fmt.Sprintf("Version: %s\nBuild at: %s\nCommit hash: %s", version, build, commit),
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -105,6 +103,8 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose mode")
+
+	rootCmd.SetVersionTemplate("{{printf \"%s\" .Version}}\n")
 }
 
 // initConfig reads in config file and ENV variables if set.

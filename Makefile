@@ -4,10 +4,10 @@ BINARY_NAME ?= orbit
 INSTALL_PATH ?= /usr/local/bin
 
 VERSION ?= latest
-BUILD_AT=`date -u '+%Y-%m-%d_%I:%M:%S%p'`
-COMMIT_HASH=`git rev-parse HEAD`
 MODULE=github.com/betterde/orbit
-BUILD_FLAG=-ldflags "-s -w -X '$(MODULE)/cmd.version=$(VERSION)' -X '$(MODULE)/cmd.commit=$(COMMIT_HASH)'"
+BUILD_AT=`date -u`
+COMMIT_HASH=`git rev-parse HEAD`
+BUILD_FLAG=-ldflags "-s -w -X '$(MODULE)/cmd.version=$(VERSION)' -X '$(MODULE)/cmd.build=$(BUILD_AT)' -X '$(MODULE)/cmd.commit=$(COMMIT_HASH)'"
 
 export CGO_ENABLED = 0
 
