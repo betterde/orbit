@@ -20,18 +20,18 @@ func RegisterRoutes(app *fiber.App) {
 	api.Post("/users", handler.CreateUser).Name("Create user")
 	api.Get("/users", handler.QueryUsers).Name("Query users list")
 
-	app.Get("/docs/*", filesystem.New(filesystem.Config{
+	app.Get("/swagger/*", filesystem.New(filesystem.Config{
 		Root:               docs.Serve(),
 		Index:              "user.swagger.json",
 		NotFoundFile:       "user.swagger.json",
 		ContentTypeCharset: "UTF-8",
-	})).Name("Swagger user.swagger.json")
+	})).Name("Swagger JSON Schema")
 
-	app.Get("/swagger/*", swagger.New(swagger.Config{
-		URL:          "/docs/user.swagger.json",
+	app.Get("/docs/*", swagger.New(swagger.Config{
+		URL:          "/swagger/user.swagger.json",
 		DeepLinking:  false,
 		DocExpansion: "none",
-	}))
+	})).Name("Swagger UI")
 
 	// Embed SPA static resource
 	app.Get("*", filesystem.New(filesystem.Config{
